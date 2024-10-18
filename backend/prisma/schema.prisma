@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @unique @default(uuid())
+  email       String
+  password    String
+  name        String
+  type        Int
+  deleted     Boolean
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Order       Order[]
+
+  @@map("users")
+}
+
+model Order {
+  id        Int         @id @unique @default(autoincrement())
+  clientId  Int
+  vendorId  String
+  value     Float
+  deleted   Boolean
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  client    Customer    @relation(fields: [clientId], references: [id])
+  vendor    User        @relation(fields: [vendorId], references: [id])
+  items     OrderItem[]
+
+  @@map("orders")
+}
+
+model Customer {
+  id        Int      @id @unique @default(autoincrement())
+  cpf       String
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  deleted   Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@map("customers")
+}
+
+model Item {
+  id          Int         @id @unique @default(autoincrement())
+  name        String
+  description String?
+  categoryId  Int
+  value       Float
+  stock       Int
+  deleted     Boolean
+  image       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  category    Category    @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
+
+  @@map("items")
+}
+
+model Category {
+  id          Int      @id @unique @default(autoincrement())
+  name        String
+  description String?
+  deleted     Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  items       Item[]
+
+  @@map("categories")
+}
+
+model OrderItem {
+  id        Int      @id @unique @default(autoincrement())
+  orderId   Int
+  itemId    Int
+  value     Float
+  quantity  Int
+  deleted   Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id])
+  item      Item     @relation(fields: [itemId], references: [id])
+
+  @@map("order_items")
+}
